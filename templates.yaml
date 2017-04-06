@@ -1,0 +1,7 @@
+welcome: Welcome, to my associated press news stealer. What would you like me to do?
+reprompt: I didn't quite get that. Please state again what you would like me to search.
+latest_news: Ok. Here are the latest news about {{word}}
+recommended_topics: Ok. Here are your recommended topics
+recommended_news: Ok. Here are your recommended news based on your preferences
+reprompt_word: I didn't quite understand that. What did you want the news for?
+play_radio: Ok. Playing the radio now
