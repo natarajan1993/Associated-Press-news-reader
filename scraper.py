@@ -225,6 +225,13 @@ def update_recommendations(headlines_list):
     with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt', 'w') as file:
         file.writelines("\n".join(headlines_list))
 
+'''Flask ask function that resets the preferences to the initial one. Mainly to simplify the typing'''
+
+
+@ask.intent('ResetPreferencesIntent')
+def reset_preferences():
+    update_recommendations(['trump', 'gop', 'military', 'budget', 'new york'])
+    return statement('Preferences have been reset')
 
 '''Flask ask function that returns the list from the recommended topics text file'''
 
