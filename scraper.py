@@ -1,5 +1,5 @@
 """A rough implementation of an Alexa skill using flask-ask, beautiful soup and scikit-learn. The machine learning
-   algorithm used for updating the user preferences is called tf-idf (Term Frequency-Inverse Document Frequency. It
+   algorithm used for updating the user preferences is called tf-idf (Term Frequency-Inverse Document Frequency). It
    looks through a set of documents and finds the most common words among all the documents and ranks them by their
    frequency scores. Right now the machine learning itself is very slow because it's trawling through a set of docs on
    the local machine. More development is needed to optimize and streamline the process. Each document contains a single
