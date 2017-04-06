@@ -1,0 +1,7 @@
+SearchWordIntent search for {word}
+SearchWordIntent give me the latest on {word}
+SearchWordIntent What is the latest news about {word}
+PlayRadioIntent play the radio
+RecommendedTopicsIntent What are my recommended topics
+RecommendedNewsIntent what is my recommended news
+ResetPreferencesIntent Reset my preferences
