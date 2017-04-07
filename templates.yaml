@@ -3,5 +3,7 @@ reprompt: I didn't quite get that. Please state again what you would like me to 
 latest_news: Ok. Here are the latest news about {{word}}
 recommended_topics: Ok. Here are your recommended topics
 recommended_news: Ok. Here are your recommended news based on your preferences
+summary: Ok. Here is a quick summary of that.
 reprompt_word: I didn't quite understand that. What did you want the news for?
+reprompt_summary: I didn't quite understand that. What did you want the summary for?
 play_radio: Ok. Playing the radio now
