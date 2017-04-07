@@ -29,6 +29,15 @@
     },
     {
       "intent": "ResetPreferencesIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "position",
+          "type": "LIST_OF_POSITIONS"
+        }
+      ],
+      "intent": "SummarizeIntent"
     }
   ]
 }
