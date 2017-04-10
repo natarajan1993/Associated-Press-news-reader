@@ -7,3 +7,4 @@ RecommendedNewsIntent what is my recommended news
 ResetPreferencesIntent Reset my preferences
 SummarizeIntent Give me a summary of the {position} headline
 SummarizeIntent what is the summary of the {position} headline
+LatestNewsIntent what is the latest news
