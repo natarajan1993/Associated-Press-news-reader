@@ -28,11 +28,12 @@
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from flask import Flask, render_template
-from flask_ask import Ask, question, statement, audio, session
+from flask_ask import Ask, question, statement, audio
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction import text
 import os
+import requests
 from fnmatch import fnmatch
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -123,13 +124,13 @@ def parse_word(word):
    It returns a list of the full list of headlines and the corresponding links for them.'''
 
 
-def scrape(word):
+def scrape(word,
+           link='http://hosted.ap.org/dynamic/external/search.hosted.ap.org/wireCoreTool/Search?SITE=AP&SECTION=HOME' \
+                '&TEMPLATE=DEFAULT&query='):
     full_list = []
     all_links = []
-    ap = 'http://hosted.ap.org/dynamic/external/search.hosted.ap.org/wireCoreTool/Search?SITE=AP&SECTION=HOME' \
-         '&TEMPLATE=DEFAULT&query='
 
-    page = urlopen(ap + word)
+    page = urlopen(link + word)
 
     soup = BeautifulSoup(page, 'lxml')
 
@@ -145,12 +146,13 @@ def scrape(word):
 '''Function that returns all the links corresponding to the searched topic'''
 
 
-def scrape_links(word):
+def scrape_links(word,
+                 link="http://hosted.ap.org/dynamic/external/search.hosted.ap.org/wireCoreTool/Search?SITE=AP&SECTION"
+                      "=HOME"
+                      "&TEMPLATE=DEFAULT&query="):
     all_links = []
-    ap = 'http://hosted.ap.org/dynamic/external/search.hosted.ap.org/wireCoreTool/Search?SITE=AP&SECTION=HOME' \
-         '&TEMPLATE=DEFAULT&query='
 
-    page = urlopen(ap + word)
+    page = urlopen(link + word)
 
     soup = BeautifulSoup(page, 'lxml')
 
@@ -158,6 +160,23 @@ def scrape_links(word):
         if a_tag['href'].startswith('/dynamic/stories/'):  # This step is needed to weed out the unwanted links
             all_links.append('http://hosted.ap.org' + a_tag['href'])
     return all_links
+
+
+'''Function that scrapes the headlines from the latest news from AP at bigstory.ap.org'''
+
+
+def scrape_latest_news():
+    r = requests.get("http://bigstory.ap.org/")
+    soup = BeautifulSoup(r.content, 'lxml')
+    all_heads = []
+    all_links = []
+    all_heads_raw = soup.find_all('h5', {'class': 'entry-title node-title title'})
+    for a_tag in soup.find_all('a', href=True):
+        if a_tag['href'].startswith('/article/'):
+            all_links.append('http://bigstory.ap.org' + a_tag['href'])
+    for heads in all_heads_raw:
+        all_heads.append(heads.get_text())
+    return all_heads[:15], all_links[:15]
 
 
 '''Function that clears all the contents of all the files in all the directories'''
@@ -197,24 +216,23 @@ def write_text_to_files(headlines_list):
                  [headlines_list[13], r'C:\Users\Natarajan\PycharmProjects\AP_scraper\temp\t5\a2.txt'],
                  [headlines_list[14], r'C:\Users\Natarajan\PycharmProjects\AP_scraper\temp\t5\a3.txt']]
     for i in range(15):
-        with open(file_list[i][1], 'w') as file:
+        with open(file_list[i][1], 'w',encoding='utf-8') as file:
             file.write(file_list[i][0])
 
 
-'''Function that returns the full news article text for a single link. The AP uses html under the p tag and class
-   ap-story-p. Returns a string of the entire article'''
+'''Function that returns the full news article text for a single link. Returns a string of the entire article'''
 
 
-def return_full_news_string(ap):
+def return_full_news_string(url, tag='p', html_class='ap-story-p', start=0, truncate=1):
     full_list = []
-    page = urlopen(ap)
+    page = urlopen(url)
 
     soup = BeautifulSoup(page, 'lxml')
 
-    all_heads = soup.find_all('p', {'class': 'ap-story-p'})
+    all_heads = soup.find_all(tag, {'class': html_class})
     for heads in all_heads:
         full_list.append(heads.get_text())
-    full_list = full_list[0:len(full_list) - 1]
+    full_list = full_list[start:len(full_list) - truncate]
     a = ' '.join(full_list)
 
     return a
@@ -255,26 +273,6 @@ def word_to_num(position):
         index = 13
     if position == '15th' or position == 'fifteenth':
         index = 14
-    if position == '16th' or position == 'sixteenth':
-        index = 15
-    if position == '17th' or position == 'seventeeth':
-        index = 16
-    if position == '18th' or position == 'eighteenth':
-        index = 17
-    if position == '19th' or position == 'nineteenth':
-        index = 18
-    if position == '20th' or position == 'twentieth':
-        index = 19
-    if position == '21st' or position == 'twenty first':
-        index = 20
-    if position == '22nd' or position == 'twenty second':
-        index = 21
-    if position == '23rd' or position == 'twenty third':
-        index = 22
-    if position == '24th' or position == 'twenty fourth':
-        index = 23
-    if position == '25th' or position == 'twenty fifth':
-        index = 23
 
     return index
 
@@ -302,7 +300,7 @@ def summarize_text(url):
 
 def update_recommendations(headlines_list):
     clear_contents(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt')
-    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt', 'w') as file:
+    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt', 'w',encoding='utf-8') as file:
         file.writelines("\n".join(headlines_list))
 
 
@@ -310,7 +308,7 @@ def update_recommendations(headlines_list):
 
 
 def write_links_to_file(links_list, path=r'C:\Users\Natarajan\PycharmProjects\AP_scraper\news_temp.txt'):
-    with open(path, 'w') as file:
+    with open(path, 'w',encoding='utf-8') as file:
         file.write("\n".join(links_list))
 
 
@@ -325,7 +323,7 @@ def summarize(position):
         return question(reprompt)
     else:
         position_num = word_to_num(position)
-        with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\news_temp.txt', 'r') as file:
+        with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\news_temp.txt', 'r',encoding='utf-8') as file:
             for line in file:
                 all_links.append(line)
         url = all_links[position_num]
@@ -341,7 +339,7 @@ def summarize(position):
 
 @ask.intent('ResetPreferencesIntent')
 def reset_preferences():
-    update_recommendations(['trump', 'gop', 'military', 'budget', 'new york'])
+    update_recommendations(['trump', 'gop', 'military', 'syria', 'new york'])
     return statement('Preferences have been reset')
 
 
@@ -351,7 +349,7 @@ def reset_preferences():
 @ask.intent('RecommendedTopicsIntent')
 def return_topics():
     lines = []
-    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt') as file:
+    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt',encoding='utf-8') as file:
         for line in file:
             line = line.strip()
             lines.append(line)
@@ -374,7 +372,7 @@ def recommended_news():
     e4 = []
     e5 = []
 
-    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt') as file:
+    with open(r'C:\Users\Natarajan\PycharmProjects\AP_scraper\docs\topics.txt',encoding='utf-8') as file:
         for line in file:
             line = line.strip()
             lines.append(line)
@@ -406,6 +404,23 @@ def recommended_news():
         all_recommended_headlines_list)  # Converts the list to a large string
     message = render_template('recommended_news')
     return statement(message + '... ' + all_recommended_headlines_string)
+
+
+'''Flask ask function that reads out the latest news'''
+
+
+@ask.intent('LatestNewsIntent')
+def latest_news():
+    e = []
+    all_heads, all_links = scrape_latest_news()
+    for l in all_links:
+        e.append(return_full_news_string(l, tag='p', html_class='', start=1, truncate=4))
+    write_text_to_files(e)
+    write_links_to_file(all_links)
+    update_tfidf()
+    message = render_template('latest_news_general')
+    heads = '... '.join(all_heads)
+    return statement(message + '... ' + heads)
 
 
 '''Flask ask function for searching the ap website for one single term'''
