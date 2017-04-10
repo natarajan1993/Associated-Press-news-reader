@@ -38,6 +38,9 @@
         }
       ],
       "intent": "SummarizeIntent"
+    },
+    {
+      "intent": "LatestNewsIntent"
     }
   ]
 }
